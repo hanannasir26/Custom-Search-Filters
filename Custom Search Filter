@@ -1,0 +1,344 @@
+<?php
+/**
+* Template Name: Search Template
+*
+* @package WordPress
+* @subpackage Twenty_Twenty_one
+*/
+get_header();?>
+
+
+<!-- Filters -->
+<div class="container">
+
+<div class="filters_x">
+
+<div class="filters-head">
+	<h2>Search Rentals</h2>
+</div>	
+
+<div class="filters_">
+	
+<form class="subform" action="<?php echo esc_url(home_url('/search-rentals/')); ?>" method="get" name="search_rentals">
+	
+  	<select id="beds" name="beds">
+		<option value="opt">Beds</option>
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="studio">Studio</option>
+  	</select>
+	
+	
+	<select id="bath" name="bath">
+	  	<option value="opt">Baths</option>
+		<option value="1">1</option>
+		<option value="1.5">1.5</option>
+		<option value="2">2</option>
+	</select>
+	
+	
+	<!------Search keyword------>
+	<input type="text" name="sk" placeholder="Search Keyword" class="dropbtn2" style="margin-left:10px; margin-right:10px;" />
+
+	<!--<input type="text" name="sk" placeholder="Search Keyword" class="dropbtn2" onkeypress="if(event.keyCode==13) {javascript:form.submit();}" style="margin-left:10px; margin-right:10px;" />-->
+	
+  <input id="sub-mit" class="btn-submit" type="submit" value="Search" name="search">
+
+</form>
+
+	
+</div>
+
+	</div>	
+
+
+<?php  if(isset($_GET['search'])){ ?>
+
+<div class="userselection">
+
+	<?php 
+		/*$queryString = $_SERVER['QUERY_STRING']; 
+		print_r($queryString);	*/
+		
+		$bedss = $_GET['beds'];
+		$sk = $_GET['sk'];
+		$baths = $_GET['bath'];
+		 
+		if($bedss == 'opt')
+		{}
+		else
+		{
+			echo '<div class="selection">Beds='.$bedss.'</div>';
+		}
+		
+		if($sk == '')
+		{}
+		else
+		{
+			echo '<div class="selection">Keyword='.$sk.'</div>';
+		}
+		
+		if($baths == 'opt')
+		{}
+		else
+		{
+			echo '<div class="selection">Bath='.$baths.'</div>';
+		}
+		
+		
+		
+		echo '<div class="selection" id="clear_selection">Clear Section</div>';
+		
+	?>
+
+</div>
+
+<?php } ?>
+
+	<div class="listings">
+		<div class="row">
+              <?php
+			  
+			  if(isset($_GET['search']) )
+			  {
+				  //bedroom
+				  if($_GET['beds'] === 'opt')
+				  {
+				  	$value = "";
+				  }
+				  else
+				  {
+				  	$value = $_GET['beds'];
+				  }
+				  
+				  //keywords
+				  if($_GET['sk'] === '')
+				  {
+				  	$value4 = "";
+				  }
+				  else
+				  {
+				  	$value4 = $_GET['sk'];
+				  }
+				  
+				  
+				  if($_GET['bath'] === 'opt')
+				  {
+				  	$value1 = "";
+				  }
+				  else
+				  {
+				  	 $value1 = $_GET['bath'];
+				  }
+				 
+				  
+				  
+				 // $bed_meta_query = array('relation' => 'AND');
+				  $bed_meta_query = array(
+						'key'       => 'bedrooms',
+						'value'     => $value,
+						'compare'   => 'LIKE',
+					);
+				  
+					//bathrooms
+					//$bath_meta_query = array('relation' => 'OR');
+					$bath_meta_query = array(
+						'key'       => 'bathrooms',
+						'value'     => $value1,
+						'compare'   => 'LIKE',
+				   );
+				   
+				   //parking
+				  //$parking_meta_query = array('relation' => 'OR');
+				  $parking_meta_query = array(
+						'key'       => 'parking',
+						'value'     => $value2,
+						'compare'   => 'LIKE',
+				 );
+				 
+				 //pets
+				  //$pets_meta_query = array('relation' => 'OR');
+				  $pets_meta_query = array(
+						'key'       => 'pets',
+						'value'     => $value3,
+						'compare'   => 'LIKE',
+				 );
+			
+				 
+				 //mycode
+				 
+				 $main_args = array(
+                   'post_type' => 'property',
+                    'posts_per_page' => 9,
+		 			'paged' => get_query_var('paged') ? get_query_var('paged') : 1, 
+					's' => $value4,
+					'meta_query'    => array( 
+				 	
+					'relation' => 'AND',
+					
+					array(
+					   'key' => 'bedrooms',
+					   'value' => $value,
+					   'compare' => 'LIKE'
+				   ),
+				   
+				   array(
+					   'key' => 'bathrooms',
+					   'value' => $value1,
+					   'compare' => 'LIKE'
+				   ),	
+					
+					$price_meta_query,
+					
+				 )  
+               );
+				
+			 }
+			 
+			 else
+			 {
+			 	$main_args = array(
+                   'post_type' => 'property',
+                    'posts_per_page' => 9,
+		 			'paged' => get_query_var('paged') ? get_query_var('paged') : 1, 
+					
+               );
+			 }
+			 
+
+        $the_main_loop = new WP_Query($main_args);
+       	
+			 if($the_main_loop->have_posts())
+			 {
+			 
+			   while($the_main_loop->have_posts()) { 
+             
+			   $the_main_loop->the_post(); 
+             
+			 	//echo "postid=".get_the_id().",,";
+			 
+			   $image = wp_get_attachment_image_src( get_post_thumbnail_id( get_the_id() ), 'full' );
+             
+			   $property_garage = get_post_meta(get_the_id(),'property_garage',true);
+             
+			   $property_carport = get_post_meta(get_the_id(),'property_carport',true);
+             
+			   if($property_garage == ""){ $property_garage = '0'; }
+             
+			   if($property_carport == ""){ $property_carport = '0'; } 
+             
+			   $parking_value = $property_carport + $property_garage;
+          ?>
+		  	
+	
+				
+              <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 mb-4">
+                
+				<div class="green-street-box">
+				
+				  
+				  <div class="exp-slid">
+						
+						<?php
+
+							// Check rows exists.
+
+							if( have_rows('repeter_gallary_image') ):
+
+							// Loop through rows.
+							while( have_rows('repeter_gallary_image') ) : the_row();
+						?>														
+								
+								<a href="<?php the_permalink(); ?>" target="_blank"><img src="<?php echo get_sub_field('gallary_image'); ?>" alt=""></a>									
+
+						<?php
+							
+							// End loop.
+							endwhile;
+							
+							// No value.
+							
+							else :
+							
+							// Do something...
+
+							endif;
+
+						?>		
+
+				</div>
+				  
+                  
+				  <div class="green-street-text">
+					  
+					  <h3><?php echo get_the_title(); ?></h3>
+					  
+					  <h2>$<?php echo get_post_meta(get_the_id(),'property_price',true); ?></h2>
+					  
+					  <ul>
+						  <li> <img src="<?php echo get_stylesheet_directory_uri('/Shared.png'); ?>" alt="" title="" class="green-street-icon1" >
+						  <img src="Shared-hover.png" alt="" title="" class="green-street-icon2"> <?php echo get_field('bedrooms'); ?> <span class="<?php echo get_field('bedrooms'); ?>">Beds</span></li>
+					  </ul>
+                  
+				  </div>
+                 
+				  </a> 
+				  
+				  </div>
+              </div>
+         <?php 
+		 	} 
+		 		wp_reset_postdata(); 
+             }
+			 else
+			 {
+		  ?>
+			 <div class="not-found" style="text-align:center;">No Result</div>
+			 
+		  <?php	 
+			 } 
+		  ?>	  
+			  <nav class="sw-pagination">
+					<?php pagination_nav($the_main_loop); ?>
+			  </nav>
+			  
+            </div>
+	</div>
+	
+</div>
+
+
+<!-- Filters -->
+
+
+<script type="text/javascript">
+
+
+jQuery(document).ready(function(){
+	 
+	jQuery('.dropbtn').on('click',function(e)
+	{  
+		e.preventDefault();
+		
+		jQuery('#myDropdown').toggle();
+		 
+		if(jQuery('#myDropdown').css('display') == 'block')
+		{
+			jQuery('#myDropdown input').prop('required',true);
+		}
+
+		else
+		{
+			jQuery('#myDropdown input').prop('required',false);
+		}
+		
+ 	});
+	 
+});
+
+
+</script>
+
+
+<?php get_footer();?>
